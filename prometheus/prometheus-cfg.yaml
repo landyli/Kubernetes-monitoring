@@ -12,6 +12,12 @@ data:
       scrape_interval: 15s
       scrape_timeout: 10s
       evaluation_interval: 1m
+    alerting:
+      alertmanagers:
+        - static_configs:
+          - targets: ["10.128.42.140:8060"]
+    rule_files:
+    - /etc/prometheus/rules.yml
     scrape_configs:
     - job_name: 'kubernetes-apiservers'
       kubernetes_sd_configs:
@@ -119,3 +125,25 @@ data:
     - job_name: 'pod-info'
       static_configs:
       - targets: ['podinfo:9898']
+
+  rules.yml: |
+    groups:
+    - name: test-rule
+      rules:
+      - alert: NodeMemoryUsage
+        expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes+node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 50
+        for: 1m
+        labels:
+          team: node
+        annotations:
+          summary: "{{$labels.instance}}: High Memory usage detected"
+          description: "{{$labels.instance}}: Memory usage is above 50% (current value is: {{ $value }}"
+
+      - alert: NodeMemoryUsage
+        expr: sum(sum by (container_name)( rate(container_cpu_usage_seconds_total{image!=""}[1m] ) )) / count(node_cpu_seconds_total{mode="system"}) * 100 > 2
+        for: 1m
+        labels:
+          cpu: node
+        annotations:
+          summary: "{{$labels.instance}}: High NodeCpu usage detected"
+          description: "{{$labels.instance}}: NodeCpu usage is above 2% (current value is: {{ $value }}"

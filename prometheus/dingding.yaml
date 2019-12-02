@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ding
+  namespace: monitoring
+  labels:
+    app: ding
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ding
+      component: server
+  template:
+    metadata:
+      labels:
+        app: ding
+        component: server
+      annotations:
+        prometheus.io/scrape: 'false'
+    spec:
+      containers:
+      - name: ding
+        image: timonwong/prometheus-webhook-dingtalk
+        imagePullPolicy: Always
+        command:
+          - prometheus-webhook-dingtalk
+          - --ding.profile="webhook=https://oapi.dingtalk.com/robot/send?access_token=a783289f31137634b470dfc2991e7ed583c7084838ad74bfe0a6df00a5989e16"
+         # - --web.listen-address=":8060"
+        ports:
+        - containerPort: 8060
+          protocol: TCP
+        env:
+        - name: ROBOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: zhongcao-test-dingding
+              key: token
+        resources:
+          limits:
+            memory: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ding
+  namespace: monitoring
+  labels:
+    app: ding
+spec:
+  type: NodePort
+  ports:
+    - port: 8060
+      targetPort: 8060
+      protocol: TCP
+  selector:
+    app: ding
+    component: server
+ 

@@ -29,19 +29,44 @@ spec:
           - prometheus
           - --config.file=/etc/prometheus/prometheus.yml
           - --storage.tsdb.path=/prometheus
+          - --web.enable-lifecycle
          # - --storage.tsdb.retention=720h
         ports:
         - containerPort: 9090
           protocol: TCP
+        env:
+        - name: ROBOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: zhongcao-test-dingding
+              key: token
         resources:
           limits:
-            memory: 2Gi
+            memory: 4Gi
         volumeMounts:
         - mountPath: /etc/prometheus/prometheus.yml
           name: prometheus-config
           subPath: prometheus.yml
         - mountPath: /prometheus/
           name: prometheus-storage
+      - name: alertmanager
+        image: prom/alertmanager:v0.15.3
+        imagePullPolicy: IfNotPresent
+        args:
+        - "--config.file=/etc/alertmanager/config.yml"
+        ports:
+        - containerPort: 9093
+          name: http
+        volumeMounts:
+        - mountPath: "/etc/alertmanager"
+          name: alertcfg
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
       volumes:
         - name: prometheus-config
           configMap:
@@ -53,4 +78,6 @@ spec:
         - name: prometheus-storage
           persistentVolumeClain:
             claimName: prometheus-storage
-
+        - name: alertcfg
+          configMap:
+            name: alert-config
