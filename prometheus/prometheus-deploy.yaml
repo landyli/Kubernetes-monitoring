@@ -29,7 +29,7 @@ spec:
           - prometheus
           - --config.file=/etc/prometheus/prometheus.yml
           - --storage.tsdb.path=/prometheus
-          - --storage.tsdb.retention=720h
+         # - --storage.tsdb.retention=720h
         ports:
         - containerPort: 9090
           protocol: TCP
