@@ -26,7 +26,7 @@ spec:
         imagePullPolicy: Always
         command:
           - prometheus-webhook-dingtalk
-          - --ding.profile="webhook=https://oapi.dingtalk.com/robot/send?access_token=a783289f31137634b470dfc2991e7ed583c7084838ad74bfe0a6df00a5989e16"
+          - --ding.profile="webhook=https://oapi.dingtalk.com/robot/send?access_token=xxxxxx"
          # - --web.listen-address=":8060"
         ports:
         - containerPort: 8060
